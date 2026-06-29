@@ -1,213 +1,277 @@
-# BlackTile V12 - System Architecture
+# BlackTile V12 - System Architecture (FINAL SPEC)
 
 **Document ID:** 02  
 **Version:** V12.0  
-**Status:** Official  
-**Last Updated:** 2026-06-29
+**Status:** Final Specification  
+**Scope:** Binance BTCUSDT Perpetual Futures System
 
 ---
 
 # 1. Purpose
 
-본 문서는 BlackTile V12의 전체 시스템 구조와 각 계층의 역할을 정의한다.
+본 문서는 BlackTile V12의 전체 시스템 구조와 Cell 기반 아키텍처를 정의한다.
 
-모든 구현은 본 문서에서 정의한 아키텍처를 기준으로 개발한다.
-
----
-
-# 2. Architecture Principles
-
-BlackTile V12는 다음 원칙을 따른다.
-
-- Single Responsibility Principle
-- One Cell = One Python File
-- One Cell = One Main Class
-- Layered Architecture
-- Unidirectional Dependency
-- Documentation First
-- Test First
-- Fail Safe Design
+모든 구현은 본 구조를 절대적으로 따른다.
 
 ---
 
-# 3. High-Level Architecture
+# 2. Architecture Overview
+
+BlackTile V12는 **Cell-based Layered Architecture**이다.
+
+각 Layer는 독립적인 책임을 가지며, 단방향으로만 흐른다.
+
+---
+
+# 3. Full System Flow
 
 ```
-Bootstrap
-        │
-        ▼
-Data Pipeline
-        │
-        ▼
-Indicator Engine
-        │
-        ▼
-Strategy Engine
-        │
-        ▼
-Risk Engine
-        │
-        ▼
-Decision Engine
-        │
-        ▼
-Execution Engine
-        │
-        ▼
-Protection Engine
-        │
-        ▼
-Database & Analytics
-        │
-        ▼
-AI Engine
-        │
-        ▼
-BlackTile Engine
+[Bootstrap]
+      ↓
+[Data Pipeline]
+      ↓
+[Indicator Engine]
+      ↓
+[Strategy Engine]
+      ↓
+[Risk Engine]
+      ↓
+[Decision Engine]
+      ↓
+[Execution Engine]
+      ↓
+[Protection Engine]
+      ↓
+[Database & Analytics]
+      ↓
+[AI Engine]
+      ↓
+[BlackTile Engine]
 ```
 
 ---
 
-# 4. Layer Responsibilities
+# 4. Cell System Structure (84 Cells)
 
-## Bootstrap
+## 📦 A. Bootstrap (Cell 01–08)
 
-프로젝트 초기화 및 환경 준비
-
----
-
-## Data Pipeline
-
-실시간 데이터 수집 및 정규화
-
----
-
-## Indicator Engine
-
-기술지표 계산
+- Cell 01: Project Bootstrap
+- Cell 02: Environment Detection
+- Cell 03: Config Loader
+- Cell 04: Secrets Manager
+- Cell 05: Logger System
+- Cell 06: Diagnostics System
+- Cell 07: Clock Abstraction
+- Cell 08: State Manager
 
 ---
 
-## Strategy Engine
+## 📡 B. Data Pipeline (Cell 09–16)
 
-매매 신호 생성
-
----
-
-## Risk Engine
-
-리스크 계산 및 거래 가능 여부 판단
-
----
-
-## Decision Engine
-
-최종 거래 승인
+- Cell 09: WebSocket Input
+- Cell 10: REST Collector
+- Cell 11: Data Normalizer
+- Cell 12: OrderBook Processor
+- Cell 13: Trade Flow Analyzer
+- Cell 14: Candle Cache
+- Cell 15: WAL Logger
+- Cell 16: Replay Engine
 
 ---
 
-## Execution Engine
+## 📈 C. Indicator Engine (Cell 17–23)
 
-주문 생성 및 실행
-
----
-
-## Protection Engine
-
-장애 감지 및 시스템 보호
-
----
-
-## Database & Analytics
-
-로그 저장 및 성과 분석
+- Cell 17: EMA Analyzer
+- Cell 18: RSI Analyzer
+- Cell 19: ATR Analyzer
+- Cell 20: ADX Analyzer
+- Cell 21: Volume Analyzer
+- Cell 22: Volatility Analyzer
+- Cell 23: Market Regime Detector
 
 ---
 
-## AI Engine
+## 🎯 D. Strategy Engine (Cell 24–31)
 
-시장 분석 및 추천값 생성
-
-AI는 직접 주문하지 않는다.
+- Cell 24: Trend Scouter
+- Cell 25: Sweep Detector
+- Cell 26: Reclaim Detector
+- Cell 27: Breakout Detector
+- Cell 28: Pullback Detector
+- Cell 29: Signal Filter
+- Cell 30: Strategy Selector
+- Cell 31: Signal Builder
 
 ---
 
-## BlackTile Engine
+## ⚖️ E. Risk Engine (Cell 32–38)
 
-각 계층을 연결하는 오케스트레이터이다.
+- Cell 32: Position Sizer
+- Cell 33: Leverage Manager
+- Cell 34: StopLoss Calculator
+- Cell 35: TakeProfit Calculator
+- Cell 36: Drawdown Guard
+- Cell 37: Portfolio Guard
+- Cell 38: Risk Validator
 
-비즈니스 로직을 포함하지 않는다.
+---
+
+## 👑 F. Decision Engine (Cell 39–40)
+
+- Cell 39: Confidence Score Engine
+- Cell 40: Chairman (Final Approval)
+
+---
+
+## 🚀 G. Execution Engine (Cell 41–46)
+
+- Cell 41: Order Builder
+- Cell 42: Order Executor
+- Cell 43: Order Monitor
+- Cell 44: SL/TP Manager
+- Cell 45: Trailing Stop Manager
+- Cell 46: Position Manager
+
+---
+
+## 🛡️ H. Protection Engine (Cell 47–51)
+
+- Cell 47: Iron Gate
+- Cell 48: Circuit Breaker
+- Cell 49: State Sync
+- Cell 50: Snapshot Manager
+- Cell 51: Watchdog
+
+---
+
+## 📒 I. Database & Analytics (Cell 52–58)
+
+- Cell 52: Signal Logger
+- Cell 53: Trade Logger
+- Cell 54: Decision Logger
+- Cell 55: Error Logger
+- Cell 56: Performance Analyzer
+- Cell 57: Report Generator
+- Cell 58: Telegram Bot
+
+---
+
+## 🤖 J. AI Engine (Cell 59–65)
+
+- Cell 59: News Sentiment AI
+- Cell 60: Pattern AI
+- Cell 61: Market Regime AI
+- Cell 62: Risk AI
+- Cell 63: Parameter Optimizer
+- Cell 64: Trade Reviewer
+- Cell 65: Learning Manager
+
+---
+
+## ⚙️ K. Engine (Cell 66)
+
+- Cell 66: BlackTile Engine (Orchestrator Only)
+
+---
+
+## 🧪 L. Test Layer (Cell 67–69)
+
+- Cell 67: Unit Test
+- Cell 68: Integration Test
+- Cell 69: E2E Test
 
 ---
 
 # 5. Dependency Rules
 
-의존성은 항상 상위 계층에서 하위 계층으로만 허용한다.
+## Allowed Direction
 
-순환 참조(Circular Dependency)는 허용하지 않는다.
+```
+Bootstrap → Data → Indicator → Strategy → Risk → Decision → Execution → Protection → DB → AI → Engine
+```
+
+## Forbidden
+
+- Reverse dependency ❌
+- Cross-layer direct calls ❌
+- Circular dependency ❌
 
 ---
 
-# 6. Data Flow
+# 6. Engine Rule (Critical)
 
-```
-Market Data
-      │
-      ▼
-Indicators
-      │
-      ▼
-Strategy
-      │
-      ▼
-Risk
-      │
-      ▼
-Decision
-      │
-      ▼
-Execution
-      │
-      ▼
-Protection
-      │
-      ▼
-Database
-```
+Cell 66 (BlackTile Engine) MUST NOT:
+
+- Make trading decisions
+- Calculate signals
+- Modify risk
+- Execute logic
+
+It ONLY orchestrates flow.
 
 ---
 
-# 7. Runtime Modes
+# 7. Data Contract Rule
 
-동일한 엔진으로 아래 실행 모드를 지원한다.
+All Cells MUST use:
+
+- Common Data Models (strict)
+- No raw dict passing
+- No ad-hoc structures
+
+---
+
+# 8. Execution Safety Rule
+
+No order can be executed unless:
+
+- Signal exists
+- Risk approved
+- Decision approved
+- System state is healthy
+
+---
+
+# 9. Runtime Modes
+
+Same architecture supports:
 
 - Backtest
 - Paper Trading
 - Shadow Live
 - Live Trading
 
-환경에 따라 데이터 입력과 주문 실행 방식만 변경한다.
+Only adapters change, NOT logic.
 
 ---
 
-# 8. Error Handling
+# 10. AI Placement Rule
 
-모든 계층은 예외를 처리하고 Logger를 통해 기록한다.
+AI is ONLY allowed in:
 
-치명적인 오류 발생 시 Protection Engine이 시스템을 안전하게 중지한다.
+- Analysis
+- Scoring
+- Recommendation
+
+AI is NEVER allowed in:
+
+- Execution
+- Risk override
+- Decision override
 
 ---
 
-# 9. Extensibility
+# 11. Expansion Rule
 
-새로운 전략이나 AI 모듈은 기존 Cell을 수정하지 않고 새로운 Cell을 추가하는 방식으로 확장한다.
+V12 is frozen:
+
+- No multi-symbol expansion
+- No multi-exchange support
+- No architecture change without version upgrade
 
 ---
 
-# 10. Architecture Rules
+# 12. Final Principle
 
-- 계층 간 책임을 침범하지 않는다.
-- Engine은 연결만 수행한다.
-- AI는 보조 역할만 수행한다.
-- 모든 실행은 Logger에 기록한다.
-- 모든 데이터는 공통 데이터 모델을 사용한다.
+> Architecture is law.  
+> Code must obey architecture, not the opposite.
