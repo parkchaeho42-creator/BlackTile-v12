@@ -1,101 +1,139 @@
-# BlackTile V12 - Master Index
+# BlackTile V12 - Master Index (FINAL SPEC)
 
-**Document ID:** 00  
 **Version:** V12.0  
-**Status:** Official
+**Status:** Final Specification  
+**Scope:** Binance BTCUSDT Perpetual Futures Automated Trading System
 
 ---
 
-# Purpose
+# 1. System Overview
 
-이 문서는 BlackTile V12 프로젝트의 모든 공식 문서를 관리하는 최상위 인덱스이다.
+BlackTile V12는 Binance BTCUSDT 무기한 선물 전용 자동매매 시스템이다.
 
-모든 개발은 본 문서에서 정의한 문서 체계를 기준으로 진행한다.
-
----
-
-# Documentation Structure
-
-| ID | Document | Description | Status |
-|----|----------|-------------|--------|
-| 00 | Master Index | 문서 관리 및 목차 | ✅ |
-| 01 | Project Vision | 프로젝트 목표 및 범위 | ⬜ |
-| 02 | System Architecture | 전체 시스템 구조 | ⬜ |
-| 03 | Development Standards | 개발 규약 | ⬜ |
-| 04 | Common Data Models | 공통 데이터 모델 | ⬜ |
-| 05 | Project Structure | 프로젝트 디렉터리 구조 | ⬜ |
-| 06 | Config Specification | 설정 파일 명세 | ⬜ |
-| 07 | Cell Architecture | Cell 기반 아키텍처 | ⬜ |
-| 08 | Development Roadmap | 개발 단계 및 일정 | ⬜ |
-| 09 | Testing Strategy | 테스트 전략 | ⬜ |
-| 10 | Deployment Guide | 배포 및 운영 | ⬜ |
-| 11 | AI Integration | AI 통합 규칙 | ⬜ |
-| 12 | Git Workflow | Git 운영 규칙 | ⬜ |
-| 13 | Coding Conventions | 코딩 스타일 및 네이밍 | ⬜ |
-| 14 | Changelog | 변경 이력 | ⬜ |
+모든 전략, 데이터 처리, 리스크 관리, 실행 로직은 단일 엔진 구조에서 동작한다.
 
 ---
 
-# Reading Order
+# 2. Core Philosophy
 
-새로운 개발자는 아래 순서로 문서를 읽는다.
-
-1. Master Index
-2. Project Vision
-3. System Architecture
-4. Development Standards
-5. Common Data Models
-6. Project Structure
-7. Config Specification
-8. Cell Architecture
-9. Development Roadmap
-10. Testing Strategy
-11. Deployment Guide
-12. AI Integration
-13. Git Workflow
-14. Coding Conventions
+- One Cell = One Responsibility
+- One Cell = One File
+- One Engine = Orchestration Only
+- AI = Advisory Only (No Execution)
+- Single Source of Truth (Data Models)
+- Configuration Driven System
+- Backtest == Live Logic 동일 구조
 
 ---
 
-# Development Flow
+# 3. Layered Architecture
 
 ```
-Project Vision
-        │
-        ▼
-Architecture
-        │
-        ▼
-Development Standards
-        │
-        ▼
-Common Data Models
-        │
-        ▼
-Project Structure
-        │
-        ▼
-Config Specification
-        │
-        ▼
-Cell Architecture
-        │
-        ▼
-Coding
-        │
-        ▼
-Testing
-        │
-        ▼
-Deployment
+Bootstrap
+Data Pipeline
+Indicator Engine
+Strategy Engine
+Risk Engine
+Decision Engine
+Execution Engine
+Protection Engine
+Database & Analytics
+AI Engine
+BlackTile Engine
 ```
 
 ---
 
-# Documentation Rules
+# 4. Runtime Modes
 
-- 모든 문서는 Markdown(.md) 형식으로 작성한다.
-- 문서 번호(ID)는 변경하지 않는다.
-- 문서를 수정할 경우 CHANGELOG에 기록한다.
-- 설계 변경은 문서를 먼저 수정한 후 코드를 수정한다.
-- 문서와 코드의 불일치를 허용하지 않는다.
+모든 로직은 동일하며 실행 환경만 다르다.
+
+- Backtest Mode
+- Paper Trading Mode
+- Shadow Live Mode
+- Live Trading Mode
+
+---
+
+# 5. System Constraints
+
+- Binance USDT-M Futures ONLY
+- BTCUSDT Perpetual ONLY
+- No multi-exchange support
+- No multi-symbol support (V12 scope)
+- No manual trading logic inside cells
+
+---
+
+# 6. Data Flow Standard
+
+```
+MarketData → IndicatorSet → Signal → RiskReport → Decision → Order → ExecutionResult → Position
+```
+
+---
+
+# 7. Execution Rule
+
+- Strategy does NOT execute orders
+- Risk does NOT execute orders
+- Decision Engine (Chairman) is final authority
+- Execution Engine only executes approved orders
+
+---
+
+# 8. AI Rule
+
+AI is strictly advisory:
+
+Allowed:
+- Pattern analysis
+- Market regime detection
+- Risk scoring suggestions
+- Parameter optimization
+
+Forbidden:
+- Order execution
+- Position modification
+- Risk override
+
+---
+
+# 9. Cell System Rule
+
+Each Cell must satisfy:
+
+- Single Responsibility
+- Fully testable
+- Independent execution possible
+- Strict input/output contract
+- No cross-layer logic leakage
+
+---
+
+# 10. Engineering Principle
+
+System must always prioritize:
+
+1. Stability
+2. Predictability
+3. Risk control
+4. Reproducibility
+5. Maintainability
+6. Profitability (last priority)
+
+---
+
+# 11. Version Philosophy
+
+V12 is:
+
+- Single exchange system
+- Single symbol system
+- High stability focused
+- Production-first architecture
+
+Future expansion (V13+) may include:
+- Multi-symbol
+- Multi-exchange
+- Portfolio system
