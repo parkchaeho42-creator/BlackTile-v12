@@ -1,355 +1,337 @@
-# BlackTile V12 - Common Data Models
+# BlackTile V12 - Common Data Models (FINAL SPEC)
 
 **Document ID:** 04  
 **Version:** V12.0  
-**Status:** Official  
-**Last Updated:** 2026-06-29
+**Status:** Final Specification  
+**Scope:** Binance BTCUSDT Perpetual Futures System
 
 ---
 
 # 1. Purpose
 
-본 문서는 BlackTile V12에서 사용하는 공통 데이터 모델을 정의한다.
+본 문서는 BlackTile V12의 모든 Cell이 공통으로 사용하는 데이터 구조를 정의한다.
 
-모든 Cell은 본 문서에 정의된 데이터 모델만 사용한다.
+모든 데이터는 본 모델을 통해서만 전달된다.
 
-Dictionary(dict)를 이용한 임의 데이터 전달은 허용하지 않는다.
+dict / raw JSON 전달은 금지된다.
 
 ---
 
-# 2. Design Principles
+# 2. Design Philosophy
 
-모든 데이터 모델은 다음 원칙을 따른다.
+- Strongly Typed Data Flow
+- Dataclass 기반 구조
+- Immutable 중심 설계
+- No ad-hoc structures
+- Explicit contracts between Cells
 
-- Python Dataclass 사용
-- Type Hint 필수
-- UTC 시간 사용
-- Immutable 객체 우선
+---
+
+# 3. Core Data Flow
+
+```
+MarketData → IndicatorSet → Signal → RiskReport → Decision → Order → ExecutionResult → Position
+```
+
+---
+
+# 4. Base Rules
+
+- 모든 모델은 dataclass 사용
+- 모든 timestamp는 UTC
+- 모든 금액은 float (V12 simplified)
 - Enum 적극 사용
-- Nullable 최소화
+- Optional 최소화
 
 ---
 
-# 3. Data Flow
+# 5. ENUM DEFINITIONS
 
-```
-MarketData
-      │
-      ▼
-IndicatorSet
-      │
-      ▼
-Signal
-      │
-      ▼
-RiskReport
-      │
-      ▼
-Decision
-      │
-      ▼
-Order
-      │
-      ▼
-ExecutionResult
-      │
-      ▼
-Position
-      │
-      ▼
-Performance
+## Side
+
+```python
+class Side(Enum):
+    LONG = "LONG"
+    SHORT = "SHORT"
 ```
 
 ---
 
-# 4. Core Models
+## OrderType
 
-| Model | Producer | Consumer |
-|--------|----------|----------|
-| MarketData | Data Pipeline | Indicator Engine |
-| Candle | Data Pipeline | Indicator Engine |
-| OrderBook | Data Pipeline | Strategy Engine |
-| Trade | Data Pipeline | Strategy Engine |
-| IndicatorSet | Indicator Engine | Strategy Engine |
-| Signal | Strategy Engine | Risk Engine |
-| RiskReport | Risk Engine | Decision Engine |
-| Decision | Decision Engine | Execution Engine |
-| Order | Order Builder | Order Executor |
-| ExecutionResult | Order Executor | Position Manager |
-| Position | Position Manager | Database |
-| Account | Exchange | Risk Engine |
-| Performance | Database | Report |
+```python
+class OrderType(Enum):
+    MARKET = "MARKET"
+    LIMIT = "LIMIT"
+```
 
 ---
 
-# 5. Model Specifications
+## SignalStrength
 
-## MarketData
-
-목적
-
-실시간 시장 데이터 전달
-
-필수 필드
-
-- symbol
-- timestamp
-- last_price
-- bid_price
-- ask_price
-- volume
-
-생성
-
-- WS Input
-- REST Collector
-
-사용
-
-- Indicator Engine
+```python
+class SignalStrength(Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+```
 
 ---
 
-## Candle
-
-OHLCV 데이터
-
-필드
-
-- open
-- high
-- low
-- close
-- volume
-- open_time
-- close_time
+# 6. CORE MODELS
 
 ---
 
-## OrderBook
+## 6.1 MarketData
 
-호가 데이터
+```python
+@dataclass
+class MarketData:
+    symbol: str
+    timestamp: datetime
 
-필드
+    last_price: float
+    bid_price: float
+    ask_price: float
 
-- best_bid
-- best_ask
-- bid_depth
-- ask_depth
-- spread
-
----
-
-## Trade
-
-체결 데이터
-
-필드
-
-- price
-- quantity
-- side
-- timestamp
+    volume: float
+```
 
 ---
 
-## IndicatorSet
+## 6.2 Candle
 
-기술지표 집합
+```python
+@dataclass
+class Candle:
+    open_time: datetime
+    close_time: datetime
 
-포함
-
-- EMA
-- RSI
-- ATR
-- ADX
-- Volume
-- Volatility
-- Market Regime
-
-생성
-
-Indicator Engine
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
+```
 
 ---
 
-## Signal
+## 6.3 OrderBook
 
-전략 신호
+```python
+@dataclass
+class OrderBook:
+    best_bid: float
+    best_ask: float
 
-필드
+    bid_depth: float
+    ask_depth: float
 
-- strategy_name
-- side
-- entry_price
-- confidence
-- timestamp
-
-생성
-
-Signal Builder
-
-Immutable
-
-YES
+    spread: float
+```
 
 ---
 
-## RiskReport
+## 6.4 Trade
 
-리스크 평가 결과
-
-필드
-
-- position_size
-- stop_loss
-- take_profit
-- leverage
-- expected_loss
-- expected_reward
-- risk_score
-
-생성
-
-Risk Engine
+```python
+@dataclass
+class Trade:
+    price: float
+    quantity: float
+    side: Side
+    timestamp: datetime
+```
 
 ---
 
-## Decision
+## 6.5 IndicatorSet
 
-최종 승인
-
-필드
-
-- approved
-- confidence
-- reject_reason
-- timestamp
-
-생성
-
-Chairman
-
----
-
-## Order
-
-거래소 주문
-
-필드
-
-- symbol
-- side
-- type
-- quantity
-- price
-- reduce_only
-- time_in_force
-
-생성
-
-Order Builder
+```python
+@dataclass
+class IndicatorSet:
+    ema: float
+    rsi: float
+    atr: float
+    adx: float
+    volume: float
+    volatility: float
+    market_regime: str
+```
 
 ---
 
-## ExecutionResult
+## 6.6 Signal
 
-주문 결과
+```python
+@dataclass
+class Signal:
+    strategy_name: str
+    side: Side
 
-필드
+    entry_price: float
+    confidence: float
 
-- order_id
-- status
-- filled_qty
-- avg_price
-- fee
-- timestamp
-
-생성
-
-Order Executor
+    strength: SignalStrength
+    timestamp: datetime
+```
 
 ---
 
-## Position
+## 6.7 RiskReport
 
-현재 포지션
+```python
+@dataclass
+class RiskReport:
+    position_size: float
+    stop_loss: float
+    take_profit: float
+    leverage: float
 
-필드
-
-- side
-- quantity
-- entry_price
-- mark_price
-- unrealized_pnl
-- leverage
-
-수정
-
-Position Manager만 가능
+    expected_loss: float
+    expected_reward: float
+    risk_score: float
+```
 
 ---
 
-## Account
+## 6.8 Decision
 
-계좌 상태
-
-필드
-
-- wallet_balance
-- available_balance
-- margin_ratio
-- total_pnl
-
----
-
-## Performance
-
-성과 분석
-
-필드
-
-- total_return
-- win_rate
-- profit_factor
-- sharpe_ratio
-- max_drawdown
-- total_trades
+```python
+@dataclass
+class Decision:
+    approved: bool
+    confidence: float
+    reject_reason: str
+    timestamp: datetime
+```
 
 ---
 
-# 6. Rules
+## 6.9 Order
 
-- 공통 모델 외 데이터 전달 금지
-- Dict 전달 금지
-- Model 변경 시 문서를 먼저 수정한다.
-- 새로운 Model은 본 문서에 등록 후 구현한다.
+```python
+@dataclass
+class Order:
+    symbol: str
+    side: Side
+    order_type: OrderType
+
+    quantity: float
+    price: float
+
+    reduce_only: bool
+    time_in_force: str
+```
 
 ---
 
-# 7. Ownership
+## 6.10 ExecutionResult
 
-| Model | Owner |
-|--------|-------|
+```python
+@dataclass
+class ExecutionResult:
+    order_id: str
+    status: str
+
+    filled_qty: float
+    avg_price: float
+    fee: float
+
+    timestamp: datetime
+```
+
+---
+
+## 6.11 Position
+
+```python
+@dataclass
+class Position:
+    side: Side
+    quantity: float
+
+    entry_price: float
+    mark_price: float
+
+    unrealized_pnl: float
+    leverage: float
+```
+
+---
+
+## 6.12 Account
+
+```python
+@dataclass
+class Account:
+    wallet_balance: float
+    available_balance: float
+
+    margin_ratio: float
+    total_pnl: float
+```
+
+---
+
+## 6.13 Performance
+
+```python
+@dataclass
+class Performance:
+    total_return: float
+    win_rate: float
+    profit_factor: float
+
+    sharpe_ratio: float
+    max_drawdown: float
+    total_trades: int
+```
+
+---
+
+# 7. Ownership Rules
+
+| Model | Owner Cell |
+|------|------------|
 | MarketData | Data Pipeline |
 | IndicatorSet | Indicator Engine |
 | Signal | Strategy Engine |
 | RiskReport | Risk Engine |
 | Decision | Decision Engine |
 | Order | Execution Engine |
+| ExecutionResult | Execution Engine |
 | Position | Position Manager |
 | Performance | Analytics |
 
 ---
 
-# 8. Future Extensions
+# 8. Data Contract Rule
 
-향후 추가 가능 모델
+- 모든 Cell은 반드시 이 모델만 사용
+- dict 전달 금지
+- JSON 직접 전달 금지
+- 모델 변경 시 문서 먼저 수정
 
-- FundingRate
-- OpenInterest
-- Liquidation
-- NewsEvent
-- AIScore
+---
 
-V12에서는 구현 대상이 아니며, 구조적 확장만 고려한다.
+# 9. Immutability Rule
+
+다음 모델은 변경 불가 개념으로 사용:
+
+- Signal
+- Decision
+- Order
+- ExecutionResult
+
+---
+
+# 10. Extension Policy
+
+추가 모델은 반드시 이 문서에 등록 후 사용:
+
+예:
+
+- FundingRate (V13 예정)
+- OpenInterest (V13 예정)
+- Liquidation (V13 예정)
