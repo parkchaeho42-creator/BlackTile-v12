@@ -1,251 +1,252 @@
-# BlackTile V12 - Development Standards
+# BlackTile V12 - Development Standards (FINAL SPEC)
 
 **Document ID:** 03  
 **Version:** V12.0  
-**Status:** Official  
-**Last Updated:** 2026-06-29
+**Status:** Final Specification  
+**Scope:** Binance BTCUSDT Perpetual Futures System
 
 ---
 
 # 1. Purpose
 
-본 문서는 BlackTile V12 프로젝트의 공식 개발 규약을 정의한다.
+본 문서는 BlackTile V12의 모든 코드 작성 규칙을 정의한다.
 
-모든 소스코드, Cell, 테스트 및 문서는 본 규약을 준수해야 한다.
-
----
-
-# 2. Core Principles
-
-## Rule 1. Documentation First
-
-모든 기능은 구현 전에 문서가 먼저 작성되어야 한다.
+모든 Cell, Engine, Model, Test는 본 규칙을 반드시 준수해야 한다.
 
 ---
 
-## Rule 2. One Cell = One Responsibility
+# 2. Core Coding Philosophy
 
-하나의 Cell은 하나의 책임만 가진다.
-
----
-
-## Rule 3. One Cell = One Python File
-
-하나의 Cell은 하나의 Python 파일로 구현한다.
-
----
-
-## Rule 4. One Cell = One Main Class
-
-각 Cell은 하나의 핵심 Class만 가진다.
+- Code is execution of architecture
+- No logic without specification
+- No structure without documentation
+- Simplicity > Complexity
+- Stability > Speed
+- Safety > Profit
 
 ---
 
-## Rule 5. Single Source of Truth
+# 3. File Rule
 
-동일한 정보는 하나의 위치에서만 관리한다.
+- 1 Cell = 1 Python file
+- File name = snake_case
+- No mixed responsibility files
 
----
-
-## Rule 6. Configuration Driven
-
-설정값은 코드에 하드코딩하지 않고 Config에서 관리한다.
-
----
-
-## Rule 7. Fail Safe
-
-오류 발생 시 시스템은 안전한 상태로 전환되어야 한다.
-
----
-
-## Rule 8. Testable Design
-
-모든 Cell은 독립적으로 테스트 가능해야 한다.
-
----
-
-# 3. Dependency Rules
-
-- 순환 참조를 금지한다.
-- 하위 계층은 상위 계층을 참조하지 않는다.
-- Engine은 각 계층을 연결만 한다.
-
----
-
-# 4. Coding Rules
-
-- Python 3.11 이상 사용
-- PEP 8 준수
-- Type Hint 필수
-- Dataclass 적극 사용
-- Enum 적극 사용
-- Magic Number 금지
-- 하드코딩 금지
-
----
-
-# 5. Naming Rules
-
-## File
-
-snake_case.py
-
-예)
+예:
 
 ```
-order_builder.py
-market_regime.py
+order_executor.py
+risk_validator.py
+signal_builder.py
 ```
 
 ---
 
-## Class
+# 4. Class Rule
 
-PascalCase
+- 1 Cell = 1 Main Class
+- Class name = PascalCase
+- No multiple core classes per file
 
-예)
+예:
 
-```
-OrderBuilder
-RiskValidator
-```
-
----
-
-## Function
-
-snake_case
-
-예)
-
-```
-calculate_risk()
-build_signal()
+```python
+class OrderExecutor:
+    pass
 ```
 
 ---
 
-## Variable
+# 5. Function Rule
 
-snake_case
+- snake_case only
+- Single responsibility
+- No hidden side effects
 
-예)
+예:
+
+```python
+def calculate_position_size():
+    pass
+```
+
+---
+
+# 6. Variable Rule
+
+- snake_case only
+- No abbreviations unless standard
+
+예:
 
 ```
 entry_price
+stop_loss_price
 position_size
 ```
 
 ---
 
-## Constant
+# 7. Constant Rule
 
-UPPER_CASE
+- UPPER_CASE
+- Must be declared in config or constants module
 
-예)
+예:
 
 ```
-MAX_LEVERAGE
-DEFAULT_TIMEOUT
+MAX_LEVERAGE = 10
+RISK_LIMIT = 0.02
 ```
 
 ---
 
-# 6. Logging Rules
+# 8. Type Safety Rule
 
-- print()는 디버깅 목적 외 사용하지 않는다.
-- Logger를 사용한다.
-- 모든 예외를 기록한다.
-- 주요 이벤트를 기록한다.
+- All functions MUST use type hints
+- All models MUST be dataclasses or enums
+- Dict usage is forbidden for core flow
 
----
+예:
 
-# 7. Exception Rules
-
-외부 API 호출은 반드시 예외 처리를 수행한다.
-
-예외를 무시하거나 `pass`로 처리하지 않는다.
+```python
+def process_signal(signal: Signal) -> RiskReport:
+    pass
+```
 
 ---
 
-# 8. Configuration Rules
+# 9. Logging Rule
 
-다음 정보는 Config에서만 관리한다.
+- print() 금지 (디버깅 제외)
+- 반드시 Logger 사용
+- 모든 중요한 이벤트 기록
+
+로그 필수 항목:
+
+- Signal 생성
+- Risk 승인/거절
+- Order 실행
+- Error 발생
+- System state change
+
+---
+
+# 10. Exception Rule
+
+- 모든 external call은 try/except 필수
+- 예외는 반드시 logging
+- silent fail 금지
+
+예:
+
+```python
+try:
+    execute_order()
+except Exception as e:
+    logger.error(e)
+    raise
+```
+
+---
+
+# 11. Config Rule
+
+다음은 절대 코드에 직접 작성 금지:
 
 - API Key
-- Secret
+- Secret Key
 - Symbol
 - Leverage
-- Risk
-- Strategy Parameter
-- Telegram
-- AI Parameter
+- Risk parameters
+- AI parameters
+
+→ 반드시 Config Layer 사용
 
 ---
 
-# 9. AI Rules
+# 12. AI Rule
 
-AI는 다음만 수행한다.
+AI는 절대 실행 주체가 아니다.
 
-- 시장 분석
-- 패턴 분석
-- 위험 점수
-- 파라미터 추천
+## Allowed
 
-AI는 다음을 수행하지 않는다.
+- Market analysis
+- Pattern detection
+- Risk scoring suggestion
+- Parameter optimization
 
-- 주문 실행
-- Position 변경
-- Risk 우회
-- Chairman 우회
+## Forbidden
+
+- Order execution
+- Risk override
+- Decision override
+- Position modification
 
 ---
 
-# 10. Testing Rules
+# 13. Data Rule
 
-모든 Cell은 다음 테스트를 수행한다.
+- ALL communication MUST use Common Data Models
+- Dict passing 금지
+- Raw JSON 금지 (internal flow)
+
+---
+
+# 14. Testing Rule
+
+모든 Cell은 테스트 가능해야 한다.
+
+필수 테스트:
 
 - Unit Test
 - Integration Test
-- 필요 시 E2E Test
+- E2E Test (필요 시)
 
 ---
 
-# 11. Documentation Rules
+# 15. Dependency Rule
 
-모든 Cell은 다음 내용을 문서화한다.
-
-- 목적
-- 입력
-- 출력
-- 의존성
-- 예외 처리
-- 테스트 방법
+- 하위 → 상위 호출 금지
+- 순환 참조 금지
+- Engine은 orchestration only
 
 ---
 
-# 12. Code Review Checklist
+# 16. Error Handling Rule
 
-코드를 병합하기 전에 다음 항목을 확인한다.
-
-- 기능 구현 완료
-- 테스트 통과
-- Logger 적용
-- Config 사용
-- Type Hint 적용
-- 예외 처리 완료
-- 문서 업데이트 완료
+- 모든 error는 logging 필수
+- 시스템 중단 가능 error는 명시
+- silent ignore 절대 금지
 
 ---
 
-# 13. Definition of Done
+# 17. Code Review Rule
 
-하나의 Cell은 아래 조건을 모두 만족해야 완료로 간주한다.
+모든 코드 merge 전에:
+
+- Spec 일치 여부 확인
+- Test 통과 확인
+- Logger 적용 확인
+- Config 적용 확인
+- Type hint 확인
+- Dependency rule 확인
+
+---
+
+# 18. Definition of Done
+
+Cell이 완료되기 위한 조건:
 
 - 구현 완료
 - 테스트 통과
-- 문서 작성 완료
-- Logger 적용
-- Config 적용
-- 코드 리뷰 완료
+- 로그 적용
+- Config 분리
+- 문서 일치
+- 리뷰 통과
+
+---
+
+# 19. Golden Rule
+
+> “If it is not in the spec, it does not exist.”
